@@ -1,0 +1,29 @@
+component Bubble inherits Rectangle {
+
+    in property <string> text:"Text";
+
+    VerticalLayout {
+        cross-axis-alignment: center;
+        Rectangle {
+            width: 180px;
+            height: 40px;
+            background: #f8f8fa;
+            border-radius: 10px;
+
+            Text {
+                text: text;
+                font-size: 20px;
+                color: #0e0d0d;
+            }
+        }
+
+        Path {
+            width: 50px;
+            height: 10px;
+            commands: "M 0 0 L 50 30 L 100 0 Z";
+            fill: #f8f8fa;
+        }
+    }
+}
+
+export { Bubble }

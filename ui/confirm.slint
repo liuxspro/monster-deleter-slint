@@ -1,0 +1,58 @@
+import { Button } from "std-widgets.slint";
+import { CustomButton } from "./components/button.slint";
+import { Bubble } from "./components/bubble.slint";
+import { SpriteAnimator } from "./components/sprite.slint";
+ 
+
+
+component Confirm inherits Rectangle {
+    callback destroy;
+
+    VerticalLayout {
+        alignment: center;
+        cross-axis-alignment: center;
+
+        v := Bubble {
+            height: 40px;
+            width: 180px;
+            text: "喂，是这个吗？";
+            visible: false;
+        }
+
+        file := SpriteAnimator {
+            width: 180px;
+            height: 320px;
+            sprite-sheet: @image-url("./assets/指着文件.png");
+            play_once: true;
+            visible: true;
+            playing: true;
+            stopped => { btns.visible = true; v.visible = true }
+        }
+
+        btns := HorizontalLayout {
+            height: 30px;
+            spacing: 20px;
+            visible: false;
+
+            btn1 := CustomButton {
+                width: 60px;
+                text: "是的";
+                font-size: 16px;
+                clicked => {
+                    destroy();
+                }
+            }
+
+            btn2 := CustomButton {
+                text: "嘤嘤嘤就是这个";
+                font-size: 16px;
+                clicked => {
+                    destroy();
+                }
+            }
+        }
+    }
+}
+
+
+export { Confirm }

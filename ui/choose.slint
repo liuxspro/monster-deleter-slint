@@ -1,0 +1,36 @@
+component Choose inherits Rectangle {
+    // 对外回调：把点击坐标传给外部（new.slint）使用
+    callback choose-clicked(x: length, y: length);
+
+    choose_img := Image {
+        source: @image-url("./assets/选择界面.jpg");
+        width: 100%;
+        height: 100%;
+        opacity: 0.55;
+        horizontal-alignment: ImageHorizontalAlignment.right;
+        image-fit: fill;
+    }
+
+    choose_text := Text {
+        text: "请选择你要摧毁的文件";
+        color: white;
+        font-size: 40px;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    ta := TouchArea {
+        mouse-cursor: MouseCursor.crosshair;
+
+        clicked => {
+            ta.enabled = false; // 只能点击一次：禁用 TouchArea，后续点击不再触发
+            ta.mouse-cursor = MouseCursor.default;
+            choose_img.visible = false;
+            choose_text.visible = false;
+            // 把本次点击的坐标通过回调传出去
+            root.choose-clicked(ta.mouse-x, ta.mouse-y);
+        }
+    }
+}
+
+    export { Choose }

@@ -1,0 +1,81 @@
+component SpriteAnimator inherits Rectangle {
+    // --- 输入属性 ---
+    in property <image> sprite-sheet: @image-url("../assets/走路.png");
+    in property <duration> frame-duration: 200ms;
+    in property <int> cols: 5;
+    in property <int> rows: 3;
+    in property <int> frame-width: 225;
+    in property <int> frame-height: 400;
+    in property <bool> play_once: false;
+
+    // --- 回调 ---
+    callback stopped; // 动画播放完毕时触发
+    callback frame_at(index: int); // 每次播放到某一帧时触发，index 从 0 开始
+
+    // --- 播放控制 ---
+    in-out property <bool> playing: true;
+    in-out property <bool> debug: false;
+
+    // --- 内部状态 ---
+    property <int> total-frames: cols * rows;
+    property <int> frame-index: 0;
+    property <bool> finished: false;
+
+    // 计算精灵图中的偏移
+    property <int> sprite-x: Math.mod(frame-index, cols) * frame-width;
+    property <int> sprite-y: floor(frame-index / cols) * frame-height;
+
+    width: frame-width * 1px;
+    height: frame-height * 1px;
+    border-color: debug ? red : transparent;
+    border-width: debug ? 1px : 0px;
+
+    // --- 定时器：使用 triggered 回调 ---
+    timer := Timer {
+        interval: frame-duration;
+        running: playing && !finished;
+
+        triggered() => {
+
+            if frame-index < total-frames - 1 {
+                frame-index += 1;
+                frame_at(frame-index);
+            } else {
+                frame-index = 0;
+            }
+            // 到达最后一帧，检查是否设置了只播放一次
+            if frame-index == total-frames - 1 && play_once {
+                finished = true;
+                stopped();
+            }
+        }
+    }
+
+    // --- 复位方法 ---
+    public function reset() {
+        frame-index = 0;
+        finished = false;
+        playing = true;
+    }
+
+    Image {
+        source: sprite-sheet;
+        source-clip-x: sprite-x;
+        source-clip-y: sprite-y;
+        source-clip-width: frame-width;
+        source-clip-height: frame-height;
+        width: 100%;
+        height: 100%;
+    }
+
+    Text {
+        text: frame-index + "/" + (total-frames - 1);
+        color: blue;
+        font-size: 16px;
+        x: 0px;
+        y: 0px;
+        visible: debug;
+    }
+}
+
+export { SpriteAnimator }

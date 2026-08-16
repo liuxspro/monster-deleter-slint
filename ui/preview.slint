@@ -1,0 +1,110 @@
+import {
+    AboutSlint,
+    Button,
+    VerticalBox,
+    HorizontalBox,
+} from "std-widgets.slint";
+
+import { SpriteAnimator } from "./components/sprite.slint";
+
+
+export component AppWindow inherits Window {
+    background: #00000000;
+    width: 800px;
+    height: 800px;
+    resize-border-width: 10px;
+
+    // 移动参数
+    property <int> window-width: 800;
+    property <int> anim-width: 100;
+    property <duration> move-duration: 10s;
+
+    // 计算进度（使用 Math.mod）
+    property <int> elapsed-ms: animation-tick() / 1ms;
+    property <int> period-ms: move-duration / 1ms;
+    property <int> progress-ms: Math.mod(elapsed-ms, period-ms);
+    property <float> progress: progress-ms / period-ms; // 0~1
+
+    // 位置
+    property <length> pos-x: progress * (window-width - anim-width) * 1px;
+
+    ta := TouchArea {
+        mouse-cursor: MouseCursor.crosshair;
+        clicked => {
+        }
+    }
+
+    myRect := Rectangle {
+        x: ta.mouse-x;
+        y: ta.mouse-y;
+        width: 100px;
+        height: 100px;
+        background: ta.pressed ? orange : skyblue;
+        Text {
+            x: 5px;
+            y: 5px;
+            text: "x: " + myRect.x / 1px;
+            color: white;
+        }
+
+        Text {
+            x: 5px;
+            y: 20px;
+            text: "y: " + myRect.y / 1px;
+            color: white;
+        }
+    }
+
+    HorizontalBox {
+        walk := SpriteAnimator {
+            // x: 0;
+            // y: 0;
+            width: anim-width * 1px;
+            height: 160px;
+            sprite-sheet: @image-url("./assets/走路.png");
+            debug: true;
+        }
+
+        file := SpriteAnimator {
+            // x: 100px;
+            // y: 0px;
+            width: anim-width * 1px;
+            height: 160px;
+            sprite-sheet: @image-url("./assets/指着文件.png");
+            visible: true;
+            debug: true;
+        }
+
+        SpriteAnimator {
+            width: anim-width * 1px;
+            height: 160px;
+            sprite-sheet: @image-url("./assets/踹文件.png");
+            visible: true;
+            debug: true;
+        }
+
+        SpriteAnimator {
+            width: anim-width * 1px;
+            height: 160px;
+            sprite-sheet: @image-url("./assets/雷欧登场.png");
+            debug: true;
+        }
+
+        SpriteAnimator {
+            width: anim-width * 1px;
+            height: 160px;
+            sprite-sheet: @image-url("./assets/出场飞行.png");
+            debug: true;
+        }
+
+        SpriteAnimator {
+
+            width: anim-width * 1px;
+            height: 160px;
+            frame-width: 360;
+            frame-height: 480;
+            sprite-sheet: @image-url("./assets/爆炸.png");
+            debug: true;
+        }
+    }
+}

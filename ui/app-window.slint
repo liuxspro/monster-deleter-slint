@@ -1,0 +1,184 @@
+import { Choose } from "./choose.slint";
+import { SpriteAnimator } from "./components/sprite.slint";
+import { Confirm } from "./confirm.slint";
+
+export component AppWindow inherits Window {
+    background: #00000000;
+    full-screen: true;
+    always-on-top: true;
+    no-frame: true;
+    title: "Monster Deleter";
+
+    // 点击目标坐标（walk 动画移动的目标位置）
+    property <length> click-x: 0px;
+    property <length> click-y: 0px;
+    property <length> anim-width: 180px;
+    property <length> anim-height: anim-width * 16 / 9;
+    property <int> timer-value: 2;
+
+    // 回调
+    callback quit;
+    callback play_sound(string);
+    callback send2trash;
+
+    forward-focus: my-key-handler;
+
+    my-key-handler := FocusScope {
+        key-pressed(event) => {
+            if (event.text == Key.Escape) {
+                quit();
+            }
+            accept
+        }
+    }
+
+    function set_window(x: length, y: length) {
+        debug(x,y);
+        self.full-screen = false;
+        self.x = 100px;
+        self.y = 100px;
+        self.width = 400px;
+        self.height = 400px;
+    }
+
+    Choose {
+        choose-clicked(x, y) => {
+            click-x = x - anim-width - 40px; // 调整为动画中心点
+            click-y = y - 100px; // 调整为怪兽手指的位置
+
+            walk.visible = true;
+            walk.opacity = 1;
+            walk-timer.running = true;
+        }
+    }
+
+    // 走路动画
+    walk := SpriteAnimator {
+        x: click-x;
+        y: click-y;
+        width: anim-width;
+        height: anim-height;
+        sprite-sheet: @image-url("./assets/走路.png");
+        visible: true;
+        opacity: 0;
+
+        animate x { duration: timer-value * 1s; }
+    }
+
+    // 爆炸动画
+    boom := SpriteAnimator {
+        x: click-x + anim-width - 30px;
+        y: click-y - 160px;
+        width: anim-width;
+        height: anim-height;
+        frame-width: 360;
+        frame-height: 480;
+        sprite-sheet: @image-url("./assets/爆炸.png");
+        visible: false;
+        play_once: true;
+        playing: false;
+
+        stopped => {
+            self.visible = false;
+        }
+    }
+
+    leo_come := SpriteAnimator {
+        x: click-x;
+        y: click-y;
+        // debug: true;
+        width: anim-width;
+        height: anim-height;
+        sprite-sheet: @image-url("./assets/雷欧登场.png");
+        play_once: true;
+        visible: false;
+        playing: false;
+        stopped => {
+            self.visible = false;
+            fly_out.visible = true;
+            fly_out.playing = true;
+            fly_out.x = parent.width;
+            fly_out.width = 0px;
+            fly_out.height = 0px;
+            quit-timer.start(); // 3s 飞行动画播完后退出
+        }
+    }
+
+    quit-timer := Timer {
+        interval: 2s;
+        running: false;
+
+        triggered() => {
+            quit();
+        }
+    }
+
+    fly_out := SpriteAnimator {
+        x: click-x;
+        y: click-y;
+        width: anim-width;
+        height: anim-height;
+        sprite-sheet: @image-url("./assets/出场飞行.png");
+        play_once: false;
+        visible: false;
+        playing: false;
+        animate x { duration: 2s; }
+        animate width, height { duration: 3s; }
+    }
+
+    // 踹文件动画
+    destory_ani := SpriteAnimator {
+        x: click-x;
+        y: click-y;
+        // debug: true;
+        width: anim-width;
+        height: anim-height;
+        sprite-sheet: @image-url("./assets/踹文件.png");
+        visible: false;
+        play_once: true;
+        playing: false;
+        frame_at(index) => {
+            if (index == 5) {
+                boom.playing = true;
+                boom.visible = true;
+                play_sound("爆炸");
+                send2trash();
+            }
+        }
+        stopped => {
+            // 动画播放完毕后，退出应用
+            self.visible = false;
+            leo_come.visible = true;
+            leo_come.playing = true;
+        }
+    }
+
+    confirm := Confirm {
+        x: click-x;
+        y: click-y;
+        width: anim-width;
+        height: anim-height;
+        visible: false;
+        destroy => {
+            destory_ani.visible = true;
+            destory_ani.playing = true;
+            confirm.visible = false;
+        }
+    }
+
+    walk-timer := Timer {
+        interval: 1s;
+        running: false;
+
+        triggered() => {
+            timer-value -= 1;
+            if (timer-value <= 0) {
+                self.running = false;
+                walk.visible = false;
+                confirm.visible = true;
+                play_sound("怪兽说话");
+                confirm.y -= 40px
+            }
+        }
+    }
+}
