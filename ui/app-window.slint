@@ -138,10 +138,13 @@ export component AppWindow inherits Window {
         play_once: true;
         playing: false;
         frame_at(index) => {
+
             if (index == 5) {
                 boom.playing = true;
                 boom.visible = true;
                 play_sound("爆炸");
+            }
+            if (index == 6) {
                 send2trash();
             }
         }
