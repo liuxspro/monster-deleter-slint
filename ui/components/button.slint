@@ -9,9 +9,9 @@ component CustomButton inherits Rectangle {
     callback clicked;
 
     // 默认样式
-    width: txt.width + self.font-size;
-    height: 30px;
-    background: white; // 默认蓝色
+    width: txt.width + self.font-size * 1.2;
+    height: txt.height + self.font-size * 1.2;
+    background: white;
     border-radius: 5px;
 
     // 内部TouchArea处理交互
@@ -35,7 +35,7 @@ component CustomButton inherits Rectangle {
     states [
         // 当鼠标悬停 (ta.has-hover 为 true) 时，背景变为更深的蓝色
         hovered when ta.has-hover: {
-            background: #db9ef7; // 悬停颜色
+            background: #8f91f7; // 悬停颜色
         }
     ]
 }
