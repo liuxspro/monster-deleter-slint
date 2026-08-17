@@ -1,13 +1,14 @@
 component Bubble inherits Rectangle {
 
     in property <string> text:"Text";
+    in property <color> background-color: #f8f8fa;
 
     VerticalLayout {
         cross-axis-alignment: center;
         Rectangle {
             width: 180px;
             height: 40px;
-            background: #f8f8fa;
+            background: background-color;
             border-radius: 10px;
 
             Text {
@@ -21,7 +22,7 @@ component Bubble inherits Rectangle {
             width: 50px;
             height: 10px;
             commands: "M 0 0 L 50 30 L 100 0 Z";
-            fill: #f8f8fa;
+            fill: background-color;
         }
     }
 }

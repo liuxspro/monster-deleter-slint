@@ -57,8 +57,6 @@ export component AppWindow inherits Window {
 
     HorizontalBox {
         walk := SpriteAnimator {
-            // x: 0;
-            // y: 0;
             width: anim-width * 1px;
             height: 160px;
             sprite-sheet: @image-url("./assets/走路.png");
@@ -66,8 +64,6 @@ export component AppWindow inherits Window {
         }
 
         file := SpriteAnimator {
-            // x: 100px;
-            // y: 0px;
             width: anim-width * 1px;
             height: 160px;
             sprite-sheet: @image-url("./assets/指着文件.png");
@@ -98,7 +94,6 @@ export component AppWindow inherits Window {
         }
 
         SpriteAnimator {
-
             width: anim-width * 1px;
             height: 160px;
             frame-width: 360;

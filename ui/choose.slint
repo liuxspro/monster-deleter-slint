@@ -1,12 +1,11 @@
 component Choose inherits Rectangle {
-    // 对外回调：把点击坐标传给外部（new.slint）使用
     callback choose-clicked(x: length, y: length);
 
     choose_img := Image {
         source: @image-url("./assets/选择界面.jpg");
         width: 100%;
         height: 100%;
-        opacity: 0.55;
+        opacity: 0.50;
         horizontal-alignment: ImageHorizontalAlignment.right;
         image-fit: fill;
     }
@@ -33,4 +32,4 @@ component Choose inherits Rectangle {
     }
 }
 
-    export { Choose }
+export { Choose }
