@@ -164,6 +164,14 @@ export component AppWindow inherits Window {
             destory_ani.playing = true;
             confirm.visible = false;
         }
+        ContextMenuArea {
+            Menu {
+                MenuItem {
+                    title: "退出";
+                    activated => { root.quit(); }
+                }
+            }
+        }
     }
 
     walk-timer := Timer {
