@@ -32,15 +32,6 @@ export component AppWindow inherits Window {
         }
     }
 
-    function set_window(x: length, y: length) {
-        debug(x,y);
-        self.full-screen = false;
-        self.x = 100px;
-        self.y = 100px;
-        self.width = 400px;
-        self.height = 400px;
-    }
-
     Choose {
         choose-clicked(x, y) => {
             click-x = x - anim-width - 40px; // 调整为动画中心点
@@ -138,7 +129,6 @@ export component AppWindow inherits Window {
         play_once: true;
         playing: false;
         frame_at(index) => {
-
             if (index == 5) {
                 boom.playing = true;
                 boom.visible = true;
@@ -149,7 +139,6 @@ export component AppWindow inherits Window {
             }
         }
         stopped => {
-            // 动画播放完毕后，退出应用
             self.visible = false;
             leo_come.visible = true;
             leo_come.playing = true;
