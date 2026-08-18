@@ -37,8 +37,8 @@ export component AppWindow inherits Window {
             click-x = x - anim-width - 40px; // 调整为动画中心点
             click-y = y - 100px; // 调整为怪兽手指的位置
 
-            walk.visible = true;
             walk.opacity = 1;
+            walk.playing = true;
             walk-timer.running = true;
         }
     }
@@ -51,6 +51,7 @@ export component AppWindow inherits Window {
         height: anim-height;
         sprite-sheet: @image-url("./assets/走路.png");
         visible: true;
+        playing: false;
         opacity: 0;
 
         animate x { duration: timer-value * 1s; }
