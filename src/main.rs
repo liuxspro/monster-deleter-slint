@@ -171,13 +171,30 @@ fn main() -> Result<(), slint::PlatformError> {
         play_sound(sound.as_str());
     });
 
-    // 踹文件动画播放到指定帧时，把目标文件移入回收站
+    // 踹文件动画播放到指定帧时，把目标移入回收站。
+    // 删除放到后台线程执行：回收大文件夹可能耗时较长，若在 UI 线程同步执行，
+    // 会冻结爆炸动画（程序是全屏覆盖，用户此时什么都做不了）。
+    // 主线程在 run() 返回后通过 done_rx 等待删除完成，避免进程提前退出、
+    // 把进行到一半的回收站操作掐断。
+    let (done_tx, done_rx) = std::sync::mpsc::channel::<()>();
     let target = target.clone();
     main_window.on_send2trash(move || {
-        if let Err(e) = trash::send_to_trash(&target) {
-            show_message("Monster Deleter", &e);
-        }
+        let done_tx = done_tx.clone();
+        let target = target.clone();
+        std::thread::spawn(move || {
+            if let Err(e) = trash::send_to_trash(&target) {
+                show_message("Monster Deleter", &e);
+            }
+            let _ = done_tx.send(());
+        });
     });
 
-    main_window.run()
+    main_window.run()?;
+
+    // 释放窗口（其回调持有的 done_tx 随之 drop）。此后：
+    // - 若删除线程已触发：recv 阻塞直到它报告完成，进程不会提前退出；
+    // - 若从未触发删除（例如提前 ESC 退出）：发送端已全部 drop，recv 立即返回，不阻塞。
+    drop(main_window);
+    let _ = done_rx.recv();
+    Ok(())
 }
