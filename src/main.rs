@@ -124,6 +124,22 @@ fn show_help(exe: &Path, auto_registered: bool) {
 }
 
 fn main() -> Result<(), slint::PlatformError> {
+    // 隐藏模式：由主程序（动画窗口）派生的辅助进程，独立完成回收站操作后自行退出。
+    // 大文件夹的回收站操作可能耗时数分钟（IFileOperation 同步执行），若让动画进程
+    // 等待它，动画播完后台会残留一个卡在系统调用里、难以结束的进程。
+    // 用法：monster-deleter.exe --delete <路径>
+    let mut args = std::env::args_os();
+    args.next(); // 程序自身路径
+    if args.next().as_deref() == Some(std::ffi::OsStr::new("--delete")) {
+        let Some(path) = args.next() else {
+            return Ok(());
+        };
+        if let Err(e) = trash::send_to_trash(Path::new(&path)) {
+            show_message("Monster Deleter", &e);
+        }
+        return Ok(());
+    }
+
     // Windows 上 femtovg(OpenGL) 渲染器不支持窗口透明（透明区域会显示为黑色），
     // 改用软件渲染器以支持透明背景。
     slint::BackendSelector::new()
@@ -172,29 +188,19 @@ fn main() -> Result<(), slint::PlatformError> {
     });
 
     // 踹文件动画播放到指定帧时，把目标移入回收站。
-    // 删除放到后台线程执行：回收大文件夹可能耗时较长，若在 UI 线程同步执行，
-    // 会冻结爆炸动画（程序是全屏覆盖，用户此时什么都做不了）。
-    // 主线程在 run() 返回后通过 done_rx 等待删除完成，避免进程提前退出、
-    // 把进行到一半的回收站操作掐断。
-    let (done_tx, done_rx) = std::sync::mpsc::channel::<()>();
+    // 删除委托给隐藏的辅助进程（--delete 模式）执行：主进程动画播完立即退出，
+    // 不等待删除结果；辅助进程独立完成删除后自行退出（是个普通进程，
+    // 任务管理器中可见、可结束，不会把动画进程拖成“幽灵”）。
+    let exe = std::env::current_exe().unwrap_or_default();
     let target = target.clone();
     main_window.on_send2trash(move || {
-        let done_tx = done_tx.clone();
-        let target = target.clone();
-        std::thread::spawn(move || {
-            if let Err(e) = trash::send_to_trash(&target) {
-                show_message("Monster Deleter", &e);
-            }
-            let _ = done_tx.send(());
-        });
+        if !exe.as_os_str().is_empty() {
+            let _ = std::process::Command::new(&exe)
+                .arg("--delete")
+                .arg(&target)
+                .spawn();
+        }
     });
 
-    main_window.run()?;
-
-    // 释放窗口（其回调持有的 done_tx 随之 drop）。此后：
-    // - 若删除线程已触发：recv 阻塞直到它报告完成，进程不会提前退出；
-    // - 若从未触发删除（例如提前 ESC 退出）：发送端已全部 drop，recv 立即返回，不阻塞。
-    drop(main_window);
-    let _ = done_rx.recv();
-    Ok(())
+    main_window.run()
 }
