@@ -6,6 +6,8 @@ fn main() {
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
         winres::WindowsResource::new()
             .set_icon("ui/assets/icon.ico")
+            .set("FileDescription", "monster-deleter")
+            .set("ProductName", "monster-deleter")
             .compile()
             .expect("Failed to embed icon resource");
     }
